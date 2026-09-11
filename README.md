@@ -23,15 +23,47 @@ So SentinelScan does four things most malware scanners don't:
 
 ## The demo story — we built the attack AND the defense
 
-This hackathon submission contains **two** projects, built by the same team:
+This hackathon submission contains **two** projects, built by the same team.
+
+### Why QR-C2 is a novel attack — the gist
+
+To understand why this project matters, you need to understand **browser isolation**.
+
+**What is browser isolation?** It's a security technology that runs all web content in a remote sandbox. When you visit a website, the isolation server loads it, renders it as an image, and streams the pixels to your machine. Nothing executable ever reaches your computer. Network firewalls, DNS filters, and IDS never see the traffic. Traditional malware C2 (command-and-control) channels — HTTP, DNS, TCP — are completely blocked.
+
+**The one thing isolation can't filter:** pixels.
+
+**How CyberRecon exploits it:** A QR code is just pixels. CyberRecon's attacker encodes C2 commands as QR codes, renders them in a headless browser, and the victim's machine reads them. Commands travel from attacker to victim as **visual images** — never as network packets.
+
+**What a defender sees:**
+- Zero suspicious network traffic
+- Zero malicious DNS lookups
+- Zero blocked TCP connections
+- Nothing on the wire
+
+**What's actually happening:** A full command-and-control channel is operating through rendered images.
+
+**Where this comes from:** Mandiant documented this technique in 2024. It's not theoretical — it's a real bypass of a widely-trusted security boundary.
+
+**What CyberRecon implements:** A full working version of this attack — QR C2 server, headless-Chrome QR decoder, keylogger, screenshot capture, webcam capture, GPS lookups, persistence, and self-destruct.
+
+**Why this matters for SentinelScan:** Traditional network security has no defense against QR-C2. **The defender has to be at the endpoint** — reading the code, watching the processes, detecting the behavior. That's exactly what SentinelScan does.
 
 ### 1. CyberRecon — the villain
 
-CyberRecon is a **working QR-code command-and-control (C2) framework**. It's designed to defeat browser isolation — a security technology that runs all web content in a remote sandbox.
+A **working QR-C2 framework** that bypasses browser isolation. Source files live in
+`demo_samples/cyberrecon_*.py` and are analyzed by SentinelScan — never executed.
 
-**How CyberRecon bypasses it:** browser isolation blocks network traffic, but QR codes are just **pixels**. Malware can receive commands by reading QR codes rendered in a headless browser. No network packet ever crosses the boundary. Mandiant documented this exact technique in 2024.
+**What's inside:**
+- `c2_server.py` — Flask C2 server that encodes commands as QR images
+- `qr_decoder.py` — headless-Chrome client that reads QR codes and executes them
+- `modules/keylogger.py` — captures keystrokes, buffers, exfiltrates
+- `modules/screenshot.py` — screen capture
+- `modules/webcam.py` — webcam snapshots
+- `modules/persistence.py` — registry, scheduled task, startup folder
+- `modules/stealth.py` — anti-forensics, VM evasion, self-destruct
 
-**CyberRecon contains:** a QR C2 server, a headless-Chrome QR decoder, a keylogger, screenshot capture, webcam capture, GPS lookups, persistence mechanisms, and self-destruct.
+**Real technique. Real code. Real threat.**
 
 ### 2. SentinelScan — the defender (this project)
 
@@ -154,7 +186,7 @@ On CyberRecon, both modes independently reach the same verdict:
 ## What's inside this repository
 
 ```
-sentinelscan_clean/
+sentinelscan/
 ├── README.md                     ← this file
 ├── WRITEUP.md                    ← one-page project write-up
 ├── DEMO_VIDEO_SCRIPT.md          ← 3-minute demo shot list
@@ -198,6 +230,19 @@ sentinelscan_clean/
     ├── run_eval.py               ← accuracy + safety metrics
     └── calibrate.py              ← threshold sweep ("why 0.70?")
 ```
+
+### What the demo_samples contain
+
+25 labeled samples in `demo_samples/`:
+
+| Category | Count | Purpose |
+|---|---|---|
+| **cyberrecon_*.py** | 5 | Real CyberRecon source files — the demo villain |
+| **mal_*.py** | 17 | Synthetic malware samples covering every rule |
+| **evasion_*.py** | 3 | Obfuscated samples that demonstrate the escalation band |
+| **ben_*.py** | 4 | Clean code that must not false-positive |
+
+Every sample is labeled in `eval/gold_set.jsonl` with expected behaviors.
 
 ---
 
