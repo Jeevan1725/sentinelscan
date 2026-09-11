@@ -111,17 +111,7 @@ Streamlit UI.
 - **LLM**: Groq (`openai/gpt-oss-20b`) if `GROQ_API_KEY` is set; local rule-synthesizer otherwise
 - **Fully offline** verdicts
 
-## Limitations (honest)
 
-- **Static regex detection.** Packed or obfuscated samples partially evade it — that's
-  what the escalation band is for. Our own `evasion_*.py` samples demonstrate this live.
-- **Live monitor is process-level polling** (psutil), not kernel EDR.
-- **Gold set is 25 samples** — a demonstration set, not a validation corpus.
-- **Scorer weights are hand-calibrated** — `eval/calibrate.py` documents the threshold
-  choice, but the weights themselves weren't fit to data.
-- **RAG store covers 25 ATT&CK techniques** — a subset of ATT&CK's 700+ sub-techniques.
-- **LLM is presentation-only.** Verdict, confidence, risk, citations are deterministic.
-- **No real containment.** ESCALATE produces a recommendation and trace.
 
 ## What we'd build next
 
