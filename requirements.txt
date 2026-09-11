@@ -1,0 +1,6 @@
+streamlit>=1.30
+fastmcp>=0.3.0
+# Optional (auto-detected, graceful fallback if absent):
+# chromadb>=0.4
+# langgraph>=0.2
+# google-genai>=1.0
